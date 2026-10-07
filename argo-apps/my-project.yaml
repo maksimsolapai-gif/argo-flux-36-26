@@ -14,3 +14,6 @@ spec:
   - 'https://github.com/maksimsolapai-gif/argo-flux-36-26.git'
   #- 'https://github.com/<ваш_github_аккаунт>/argocd-applications-repo.git'
   - 'https://maksimsolapai-gif.github.io/sa-36-26-jenkins/' # И Helm-репозиторий тоже разрешаем
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
