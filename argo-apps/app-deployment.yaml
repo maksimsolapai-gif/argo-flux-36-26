@@ -10,9 +10,6 @@ spec:
  # Тот самый Helm-репозиторий из шага 2
     chart: jenkins # Название чарта в репозитории
     targetRevision: 0.1.0 # Версия чарта
-    helm:
-      valueFiles:
-        - values.yaml
   destination:
     server: https://kubernetes.default.svc # Локальный кластер
     namespace: default
