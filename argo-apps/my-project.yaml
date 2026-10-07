@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: homework-project
+  namespace: argocd
+spec:
+  description: "Project for Homework applications"
+  # Разрешаем развертывание в любые кластеры и неймспейсы (для гибкости)
+  destinations:
+  - namespace: '*'
+    server: '*'
+  # Разрешаем использовать наш новый репозиторий как источник
+  sourceRepos:
+  - 'https://github.com/maksimsolapai-gif/argo-flux-36-26.git'
+  #- 'https://github.com/<ваш_github_аккаунт>/argocd-applications-repo.git'
+  - 'https://maksimsolapai-gif.github.io/sa-36-26-jenkins/' # И Helm-репозиторий тоже разрешаем
