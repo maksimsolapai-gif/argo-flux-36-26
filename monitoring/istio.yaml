@@ -1,0 +1,57 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: monitoring
+  namespace: monitoring
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - grafana.k8s-7.sa
+        - prometheus.k8s-7.sa
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  hosts:
+    - grafana.k8s-7.sa
+  gateways:
+    - monitoring
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: kps-grafana.monitoring.svc.cluster.local
+            port:
+              number: 80
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: prometheus
+  namespace: monitoring
+spec:
+  hosts:
+    - prometheus.k8s-7.sa
+  gateways:
+    - monitoring
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local
+            port:
+              number: 9090

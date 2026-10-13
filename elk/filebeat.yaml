@@ -1,0 +1,55 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: filebeat
+  namespace: elk
+spec:
+  interval: 10m
+  releaseName: filebeat
+  dependsOn:
+    - name: elasticsearch
+  chart:
+    spec:
+      chart: ./filebeat
+      sourceRef:
+        kind: GitRepository
+        name: elastic-helm-charts
+        namespace: elk
+  values:
+    daemonset:
+      extraEnvs:
+        - name: ELASTICSEARCH_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-master-credentials
+              key: username
+        - name: ELASTICSEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-master-credentials
+              key: password
+      secretMounts:
+        - name: elasticsearch-certs
+          secretName: elasticsearch-master-certs
+          path: /usr/share/filebeat/certs
+      filebeatConfig:
+        filebeat.yml: |
+          filebeat.inputs:
+            - type: container
+              paths:
+                - /var/log/containers/*.log
+              processors:
+                - add_kubernetes_metadata:
+                    host: ${NODE_NAME}
+                    matchers:
+                      - logs_path:
+                          logs_path: "/var/log/containers/"
+          output.elasticsearch:
+            hosts: ["https://elasticsearch-master:9200"]
+            username: "${ELASTICSEARCH_USERNAME}"
+            password: "${ELASTICSEARCH_PASSWORD}"
+            ssl.certificate_authorities: ["/usr/share/filebeat/certs/ca.crt"]
+      resources:
+        requests: {cpu: 100m, memory: 128Mi}
+        limits: {cpu: 500m, memory: 300Mi}
