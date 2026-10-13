@@ -20,7 +20,7 @@ spec:
     branch: master
   secretRef:
     name: flux-system
-  url: https://github.com/pluhin/argo-flux-36-26.git
+    https://github.com/maksimsolapai-gif/argo-flux-36-26.git
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
