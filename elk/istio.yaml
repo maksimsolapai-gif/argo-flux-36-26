@@ -1,0 +1,36 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: kibana
+  namespace: elk
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - kibana.k8s-7.sa
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: kibana
+  namespace: elk
+spec:
+  hosts:
+    - kibana.k8s-7.sa
+  gateways:
+    - kibana
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: kibana-kibana.elk.svc.cluster.local
+            port:
+              number: 5601

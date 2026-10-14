@@ -1,0 +1,31 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: elasticsearch
+  namespace: elk
+spec:
+  interval: 10m
+  releaseName: elasticsearch
+  chart:
+    spec:
+      chart: ./elasticsearch
+      sourceRef:
+        kind: GitRepository
+        name: elastic-helm-charts
+        namespace: elk
+  values:
+    clusterName: elasticsearch
+    replicas: 1
+    minimumMasterNodes: 1
+    esJavaOpts: "-Xms1g -Xmx1g"
+    clusterHealthCheckParams: "wait_for_status=yellow&timeout=5s"
+    resources:
+      requests: {cpu: 200m, memory: 2Gi}
+      limits: {cpu: "1", memory: 3Gi}
+    volumeClaimTemplate:
+      storageClassName: nfs-client
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi

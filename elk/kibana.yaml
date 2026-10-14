@@ -1,0 +1,26 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kibana
+  namespace: elk
+spec:
+  interval: 10m
+  releaseName: kibana
+  dependsOn:
+    - name: elasticsearch
+  chart:
+    spec:
+      chart: ./kibana
+      sourceRef:
+        kind: GitRepository
+        name: elastic-helm-charts
+        namespace: elk
+  values:
+    resources:
+      requests: {cpu: 200m, memory: 1Gi}
+      limits: {cpu: "1", memory: 2Gi}
+    service:
+      type: NodePort
+      port: 5601
+      nodePort: 30601
