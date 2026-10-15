@@ -18,8 +18,16 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
+
+  # Инструкция для Flux CD: взять реальный токен из Secret и внедрить в Helm values
+  valuesFrom:
+    - kind: Secret
+      name: alertmanager-slack-webhook
+      valuesKey: api-url
+      targetPath: alertmanager.config.receivers.slack_configs.api_url
+
   values:
-    # ??????? 1: ???????? ??????? ?????? ??? CPU (????????? ??? ?????)
+    # Задание 1: Описание правила алерта для CPU
     additionalPrometheusRulesMap:
       custom-cpu-alerts:
         groups:
@@ -31,10 +39,10 @@ spec:
                 labels:
                   severity: warning
                 annotations:
-                  summary: "??????? ???????? CPU ?? ???? {{ $labels.pod }}"
-                  description: "??? {{ $labels.pod }} ? namespace {{ $labels.namespace }} ?????????? ????? 0.8 ????."
+                  summary: "Высокая нагрузка CPU на поде {{ $labels.pod }}"
+                  description: "Под {{ $labels.pod }} в namespace {{ $labels.namespace }} потребляет более 0.8 ядра."
 
-    # ???????? ALERTMANAGER ? ??????????? ????????? ????????
+    # Настройка Alertmanager на интеграцию со Slack
     alertmanager:
       enabled: true
       alertmanagerSpec:
@@ -47,14 +55,23 @@ spec:
                 requests:
                   storage: 2Gi
       config:
+        global:
+          resolve_timeout: 5m
         route:
-          group_by: ['alertname']
+          group_by: ['alertname', 'namespace', 'pod']
           group_wait: 10s
           group_interval: 10s
           repeat_interval: 1h
-          receiver: 'null'
+          receiver: 'slack-notifications'
         receivers:
-          - name: 'null'
+          - name: 'slack-notifications'
+            slack_configs:
+              - channel: '#all-test'
+                # Здесь оставляем безопасную фейковую заглушку для репозитория Git (выполнение условий ДЗ)
+                api_url: 'https://slack.com' 
+                send_resolved: true
+                title: '[{{ .Status | toUpper }}] Monitoring Cluster'
+                text: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}"
 
     prometheus:
       prometheusSpec:
