@@ -1,3 +1,53 @@
+### 1: Homework Assignment 1: Metrics stack and a dashboard
+Install kube-prometheus-stack into a monitoring
+<img width="975" height="155" alt="image" src="https://github.com/user-attachments/assets/b386a58a-6b27-4254-a90c-04bb56a28ae0" />
+
+
+1.	Show that the pods are running and that the PVCs are Bound
+
+<img width="975" height="155" alt="image" src="https://github.com/user-attachments/assets/ee142437-9494-43e9-b65f-5441fd55199b" />
+
+
+
+Open the Prometheus UI (port-forward is enough) and look at Status → Targets. Report how many targets there are and how many are up.
+
+<img width="975" height="482" alt="image" src="https://github.com/user-attachments/assets/42408eed-2099-41a0-ad9b-fc053eabf6de" />
+
+
+•	Problem: The `kube-proxy` target (or similar master components) appears with a status of `DOWN`, accompanied by a "Connection refused" error.
+•	Cause: Within the component's ConfigMap (e.g., as seen via `kubectl get cm kube-proxy -n kube-system -o yaml`), the `metricsBindAddress` parameter is set to `127.0.0.1:10249` by default. This restricts the service to listening for metrics only on the node's local interface. Since Prometheus resides within an isolated pod network, it is physically unable to reach this address. This is a default Kubernetes security behavior, not a cluster malfunction.
+
+<img width="975" height="781" alt="image" src="https://github.com/user-attachments/assets/223e5a5e-c5cc-4d19-bb18-fc3fd3f2b262" />
+
+
+
+4	Open Grafana, make sure Prometheus is wired as a data source.
+
+<img width="975" height="272" alt="image" src="https://github.com/user-attachments/assets/ab4031fc-5989-4c6c-8f92-eb8e06c63535" />
+
+
+5	Build a dashboard with two panels per pod: CPU and memory. Useful starting points:
+•	Useful starting points:
+•	rate(container_cpu_usage_seconds_total{namespace="<your-ns>"}[5m])
+•	container_memory_working_set_bytes{namespace="<your-ns>"}
+•	Add a dashboard variable for the node and a panel showing the number of pods per node:
+•	sum(kube_pod_info{node=~"$node"}) by (node)
+
+<img width="975" height="434" alt="image" src="https://github.com/user-attachments/assets/56885f0c-33bd-42f2-9380-66d5c09a5331" />
+
+
+Deliverables: your values file, the dashboard exported as JSON, and a screenshot of the dashboard with data in it.
+
+Test_dashbord-1792007652064.json
+
+<img width="975" height="434" alt="image" src="https://github.com/user-attachments/assets/9c0a3f14-6348-4c53-857d-0edd918a40b1" />
+
+
+Homework Assignment 2: Alerting to Slack
+
+
+
+
 # Homework Assignment 1. ArgoCD Deployment and Application
 
 This repository contains the declarative configuration manifests for deploying an infrastructure stack using **ArgoCD** and managing encrypted secrets securely via GitOps with **Bitnami Sealed Secrets**.
