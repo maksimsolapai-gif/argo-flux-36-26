@@ -87,6 +87,6 @@ spec:
           type: loki
           uid: loki
           access: proxy
-          url: loki.monitoring.svc.cluster.local:3100
+          url: http://loki.monitoring.svc.cluster.local:3100
           jsonData:
             maxLines: 1000
