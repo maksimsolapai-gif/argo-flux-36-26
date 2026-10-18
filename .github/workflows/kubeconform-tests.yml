@@ -26,13 +26,15 @@ jobs:
       # Интеграция уведомлений о статусе (пример для Telegram)
       # Обязательно добавьте секреты TELEGRAM_TO и TELEGRAM_TOKEN в Settings -> Secrets вашего репозитория
       - name: Send Telegram Notification
-        if: always()
+        if: always() # Уведомление отправится и при успехе, и при ошибке
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            Repository: ${{ github.repository }}
-            Workflow: ${{ github.workflow }}
-            Result: ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}
-            Commit: ${{ github.sha }}
+            👤 Автор: ${{{ github.actor }}}
+            📦 Репозиторий: ${{ github.repository }}
+            🚀 Воркфлоу: ${{ github.workflow }}
+            📊 Статус: ${{ job.status == 'success' && '✅ Успешно выполнен' || '❌ Произошла ошибка' }}
+            🔗 Коммит: https://github.com{{ github.repository }}/commit/${{ github.sha }}
+
