@@ -1,0 +1,38 @@
+name: Kubernetes Manifests Validation
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  kubeconform-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Запускаем официальный docker-образ kubeconform для папки monitoring
+      - name: Run Kubeconform validation
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/apps -w /apps ghcr.io/yannh/kubeconform:latest-alpine \
+            -summary \
+            -verbose \
+            -workers 4 \
+            -strict \
+            monitoring/
+
+      # Интеграция уведомлений о статусе (пример для Telegram)
+      # Обязательно добавьте секреты TELEGRAM_TO и TELEGRAM_TOKEN в Settings -> Secrets вашего репозитория
+      - name: Send Telegram Notification
+        if: always()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            Repository: ${{ github.repository }}
+            Workflow: ${{ github.workflow }}
+            Result: ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}
+            Commit: ${{ github.sha }}
