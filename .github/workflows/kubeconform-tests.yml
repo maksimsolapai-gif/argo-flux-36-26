@@ -38,3 +38,21 @@ jobs:
             📊 Статус: ${{ job.status == 'success' && '✅ Успешно выполнен' || '❌ Произошла ошибка' }}
             🔗 Коммит: https://github.com{{ github.repository }}/commit/${{ github.sha }}
 
+# SLACK NOTIFICATION
+      - name: Send Slack Notification
+        if: always() # Уведомление отправится в любом случае
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_CHANNEL: general
+          SLACK_USERNAME: GitHub CI/CD
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: 'Результат валидации Kubernetes манифестов'
+          SLACK_MESSAGE: |
+            👤 Автор: ${{ github.actor }}
+            📦 Репозиторий: ${{ github.repository }}
+            🚀 Воркфлоу: ${{ github.workflow }}
+            📊 Статус: ${{ job.status == 'success' && '✅ Успешно выполнен' || '❌ Произошла ошибка' }}
+            🔗 Коммит: https://github.com{{ github.repository }}/commit/${{ github.sha }}
+
+
