@@ -32,7 +32,7 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            👤 Автор: ${{{ github.actor }}}
+            👤 Автор: ${{ github.actor }}
             📦 Репозиторий: ${{ github.repository }}
             🚀 Воркфлоу: ${{ github.workflow }}
             📊 Статус: ${{ job.status == 'success' && '✅ Успешно выполнен' || '❌ Произошла ошибка' }}
