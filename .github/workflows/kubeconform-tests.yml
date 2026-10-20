@@ -21,7 +21,7 @@ jobs:
             -verbose \
             -workers 4 \
             -strict \
-            monitoring/
+            ci-cd/
 
       # Интеграция уведомлений о статусе (пример для Telegram1)
       # Обязательно добавьте секреты TELEGRAM_TO и TELEGRAM_TOKEN в Settings -> Secrets вашего репозитория
