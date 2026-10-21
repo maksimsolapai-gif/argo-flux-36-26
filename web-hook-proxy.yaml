@@ -24,6 +24,6 @@ spec:
              smee --url ${SMEE_URL} --target ${JENKINS_WEBHOOK}
          env:
            - name: SMEE_URL
-            value: "https://smee.io/VtYIKecpeKaqAOU"
+             value: "https://smee.io/VtYIKecpeKaqAOU"
            - name: JENKINS_WEBHOOK
              value: "http://jenkins.ci-cd.svc.cluster.local:8080/github-webhook/"
