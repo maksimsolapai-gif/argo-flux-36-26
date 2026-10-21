@@ -220,4 +220,5 @@ The root application monitors the `argo-apps/` folder and dynamically provisions
 <img width="975" height="509" alt="image" src="https://github.com/user-attachments/assets/c2301a65-5943-4530-94ae-349b36a354ea" />
 
 
-test push for 20.Jenkins!!!
+test push for 20.Jenkins
+
