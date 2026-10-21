@@ -14,25 +14,44 @@ jobs:
     steps:
       - name: Trigger Jenkins Job through Webhook Proxy
         run: |
-          # 1. Запрашиваем Crumb защиты через прокси smee.io
-          # Smee пробросит этот запрос на http://jenkins:8080/crumbIssuer/api/json
-          echo "Получаем CSRF Crumb..."
-          CRUMB_DATA=$(curl -s -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}" \
-            --cookie-jar cookies.txt \
-            "${{ secrets.SMEE_URL }}/crumbIssuer/api/json")
-          
-          CRUMB=$(echo "$CRUMB_DATA" | jq -r '.crumb')
-          HEADER=$(echo "$CRUMB_DATA" | jq -r '.crumbRequestField')
-          
-          echo "Crumb успешно получен."
+          JENKINS_USER="${{ secrets.JENKINS_USER }}"
+          JENKINS_TOKEN="${{ secrets.JENKINS_TOKEN }}"
+          SMEE_URL="${{ secrets.SMEE_URL }}"
+          CHECK_USER="${{ github.event.inputs.username }}"
 
-          # 2. Отправляем запрос на запуск сборки с параметром
-          # Smee пробросит это на http://jenkins:8080/job/check-user-profile/buildWithParameters
-          echo "Запускаем задачу в Jenkins для пользователя: ${{ github.event.inputs.username }}"
+          echo "Шаг 1: Запрашиваем CSRF Crumb через Smee.io..."
           
-          curl -X POST -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}" \
+          # Делаем запрос и сохраняем сырой ответ в файл response.txt
+          curl -s -X GET -u "$JENKINS_USER:$JENKINS_TOKEN" \
+            --cookie-jar cookies.txt \
+            "$SMEE_URL/crumbIssuer/api/json" > response.txt
+          
+          echo "=== Полученный ответ от сервера ==="
+          cat response.txt
+          echo -e "\n=================================="
+
+          # Проверяем, содержит ли ответ ошибку Smee или HTML-код
+          if grep -q "html" response.txt || grep -q "bad gateway" response.txt; then
+             echo "КРИТИЧЕСКАЯ ОШИБКА: Smee.io не смог связаться с вашим Jenkins-сервером!"
+             echo "Проверьте, запущен ли smee-client внутри вашего Kubernetes-кластера."
+             exit 1
+          fi
+
+          # Если ответ корректный, парсим Crumb
+          CRUMB=$(jq -r '.crumb // empty' response.txt)
+          HEADER=$(jq -r '.crumbRequestField // empty' response.txt)
+
+          if [ -z "$CRUMB" ]; then
+             echo "ОШИБКА: Не удалось извлечь Crumb из ответа. Проверьте учетные данные Jenkins."
+             exit 1
+          fi
+
+          echo "Crumb успешно получен: $CRUMB"
+
+          echo "Шаг 2: Запускаем задачу в Jenkins для пользователя: $CHECK_USER"
+          curl -X POST -u "$JENKINS_USER:$JENKINS_TOKEN" \
             --cookie cookies.txt \
             -H "${HEADER}: ${CRUMB}" \
-            "${{ secrets.SMEE_URL }}/job/check-user-profile/buildWithParameters?USER_NAME=${{ github.event.inputs.username }}"
+            "$SMEE_URL/job/check-user-profile/buildWithParameters?USER_NAME=$CHECK_USER"
             
-          echo "Запрос отправлен на Smee Proxy. Проверьте историю сборок в Jenkins!"
+          echo "Запрос отправлен."
