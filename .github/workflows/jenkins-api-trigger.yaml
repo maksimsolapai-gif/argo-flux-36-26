@@ -1,4 +1,4 @@
-name: Remote Jenkins Trigger via Smee.io
+name: Direct Jenkins Trigger via IP
 
 on:
   workflow_dispatch:
@@ -9,49 +9,45 @@ on:
         default: 'root'
 
 jobs:
-  check-user:
+  run-jenkins-check:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Trigger Jenkins Job through Webhook Proxy
+      - name: Trigger Remote Jenkins Job Directly
         run: |
-          JENKINS_USER="${{ secrets.JENKINS_USER }}"
-          JENKINS_TOKEN="${{ secrets.JENKINS_TOKEN }}"
-          SMEE_URL="${{ secrets.SMEE_URL }}"
+          # В качестве URL используем прямой публичный IP из вашего /etc/hosts
+          JENKINS_IP="http://178.124.206.53"
+          HOST_HEADER="jenkins.k8s-7.sa"
+          
+          USER="${{ secrets.JENKINS_USER }}"
+          TOKEN="${{ secrets.JENKINS_TOKEN }}"
           CHECK_USER="${{ github.event.inputs.username }}"
 
-          echo "Шаг 1: Запрашиваем CSRF Crumb через Smee.io..."
-          
-          # Делаем запрос и сохраняем сырой ответ в файл response.txt
-          curl -s -X GET -u "$JENKINS_USER:$JENKINS_TOKEN" \
+          echo "=== Шаг 1: Получение защитного CSRF Crumb ==="
+          # Передаем заголовок -H "Host: ..." чтобы Ingress пропустил запрос к Jenkins
+          CRUMB_DATA=$(curl -s -X GET -u "$USER:$TOKEN" \
+            -H "Host: $HOST_HEADER" \
             --cookie-jar cookies.txt \
-            "$SMEE_URL/crumbIssuer/api/json" > response.txt
+            "$JENKINS_IP/crumbIssuer/api/json")
           
-          echo "=== Полученный ответ от сервера ==="
-          cat response.txt
-          echo -e "\n=================================="
-
-          # Проверяем, содержит ли ответ ошибку Smee или HTML-код
-          if grep -q "html" response.txt || grep -q "bad gateway" response.txt; then
-             echo "КРИТИЧЕСКАЯ ОШИБКА: Smee.io не смог связаться с вашим Jenkins-сервером!"
-             echo "Проверьте, запущен ли smee-client внутри вашего Kubernetes-кластера."
-             exit 1
-          fi
-
-          # Если ответ корректный, парсим Crumb
-          CRUMB=$(jq -r '.crumb // empty' response.txt)
-          HEADER=$(jq -r '.crumbRequestField // empty' response.txt)
+          echo "Ответ сервера безопасности:"
+          echo "$CRUMB_DATA"
+          
+          CRUMB=$(echo "$CRUMB_DATA" | jq -r '.crumb // empty')
+          HEADER=$(echo "$CRUMB_DATA" | jq -r '.crumbRequestField // empty')
 
           if [ -z "$CRUMB" ]; then
-             echo "ОШИБКА: Не удалось извлечь Crumb из ответа. Проверьте учетные данные Jenkins."
-             exit 1
+            echo "Ошибка: Не удалось получить Crumb. Проверьте логин/токен в секретах GitHub."
+            exit 1
           fi
+          echo "Crumb успешно получен."
 
-          echo "Crumb успешно получен: $CRUMB"
-
-          echo "Шаг 2: Запускаем задачу в Jenkins для пользователя: $CHECK_USER"
-          curl -X POST -u "$JENKINS_USER:$JENKINS_TOKEN" \
-            --cookie cookies.txt \
+          echo "=== Шаг 2: Запуск параметризованной сборки ==="
+          # Выполняем финальный POST-запрос с подстановкой Host, Cookie и Crumb
+          curl -s -i -X POST -u "$USER:$TOKEN" \
+            -H "Host: $HOST_HEADER" \
             -H "${HEADER}: ${CRUMB}" \
-            "$SMEE_URL/job/check-user-profile/buildWithParameters?USER_NAME=$CHECK_USER"
+            --cookie cookies.txt \
+            "$JENKINS_IP/job/check-user-profile/buildWithParameters?USER_NAME=$CHECK_USER"
             
-          echo "Запрос отправлен."
+          echo -e "\nЗапрос успешно доставлен напрямую в ваш кластер для пользователя: $CHECK_USER"
