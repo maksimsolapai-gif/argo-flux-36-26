@@ -87,3 +87,35 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: flux-taskboard-repo
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  # Указываем ваш точный репозиторий с манифестами приложения
+  url: https://github.com/maksimsolapai-gif/jenkins-docker-k8s-pipeline.git
+  ref:
+    branch: main
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: flux-taskboard-app
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  # Путь внутри репозитория, где лежат манифесты (deployment.yaml, pvc.yaml, service.yaml, istio)
+  path: ./k8s/manifests
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-taskboard-repo
+  # Целевой неймспейс кластера, куда Flux развернет ваше работающее приложение
+  targetNamespace: prod
+
+
+
