@@ -4,3 +4,4 @@ resources:
 - gotk-components.yaml
 - gotk-sync.yaml
 - taskboard-image-automation.yaml # ДОПИШИТЕ ЭТУ СТРОКУ
+- sealed-secret-ghcr.yaml
