@@ -18,13 +18,9 @@ spec:
   imageRepositoryRef:
     name: taskboard-image-repo
   policy:
-    # Оставляем числовую сортировку
+    # Flux будет сканировать только чистые числа и выбирать максимальное по возрастанию (13, 14, 15...)
     numerical:
       order: asc
-  # ИСПРАВЛЕНО: Фильтруем теги и извлекаем из них только числовую часть для сортировки
-  filterTags:
-    pattern: '^gh-[0-9]+$'
-    extract: '$match'
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1
