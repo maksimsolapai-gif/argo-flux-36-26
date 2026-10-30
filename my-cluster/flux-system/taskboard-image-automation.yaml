@@ -18,12 +18,13 @@ spec:
   imageRepositoryRef:
     name: taskboard-image-repo
   policy:
-    # Указываем Flux выбирать теги на основе регулярного выражения
+    # Оставляем числовую сортировку
     numerical:
       order: asc
-  # ИСПРАВЛЕНО: Явно говорим Flux брать только теги вида gh-1, gh-2, gh-14, игнорируя 'latest'
+  # ИСПРАВЛЕНО: Фильтруем теги и извлекаем из них только числовую часть для сортировки
   filterTags:
     pattern: '^gh-[0-9]+$'
+    extract: '$match'
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1
