@@ -1,0 +1,46 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: taskboard-image-repo
+  namespace: flux-system
+spec:
+  image: ghcr.io/maksimsolapai-gif/jenkins-docker-k8s-pipeline
+  interval: 1m0s
+  # Указываем секрет Sealed Secret, чтобы Flux мог авторизоваться в ghcr.io для чтения тегов
+  secretRef:
+    name: ghcr-secret
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: taskboard-image-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: taskboard-image-repo
+  policy:
+    # Правило сортировки: берем самый свежий тег по номеру сборки gh-*
+    numerical:
+      order: asc
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta1
+kind: ImageUpdateAutomation
+metadata:
+  name: taskboard-git-automator
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-taskboard-repo # Имя вашего репозитория приложения во Flux
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: fluxcdbot@://github.com
+        name: fluxcdbot
+      messageTemplate: 'chore(gitops): auto-update image tag to {{ .SelectedTarget.Tag }}'
+  update:
+    path: ./k8s/manifests
