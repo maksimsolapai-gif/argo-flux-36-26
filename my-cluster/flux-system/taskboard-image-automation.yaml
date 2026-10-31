@@ -34,14 +34,13 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-taskboard-repo
-  # ИСПРАВЛЕНО: secretRef перенесен внутрь секции git в соответствии со спецификацией v1 API
   git:
+    # ??????????: secretRef ????????? ?? ????? ?????? ? checkout ? commit!
+    secretRef:
+      name: ghcr-secret
     checkout:
       ref:
         branch: main
-      # ТОКЕН ПЕРЕДАЕТСЯ СТРОГО СЮДА!
-      secretRef:
-        name: ghcr-secret
     commit:
       author:
         email: fluxcdbot@://github.com
