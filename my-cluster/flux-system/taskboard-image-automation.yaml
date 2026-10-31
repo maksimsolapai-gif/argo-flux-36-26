@@ -18,10 +18,13 @@ spec:
   imageRepositoryRef:
     name: taskboard-image-repo
   policy:
-    # Flux будет сканировать только чистые числа и выбирать максимальное по возрастанию (13, 14, 15...)
+    # Числовая сортировка по возрастанию
     numerical:
       order: asc
-
+  # ИСПРАВЛЕНО ПОД СТАНДАРТ V1: Находим теги gh-X и извлекаем из них только числовую группу
+  filterTags:
+    pattern: '^gh-(?P<num>[0-9]+)$'
+    extract: '$num'
 ---
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageUpdateAutomation
@@ -39,7 +42,7 @@ spec:
         branch: main
     commit:
       author:
-        email: fluxcdbot@users.noreply.github.com
+        email: fluxcdbot@://github.com
         name: fluxcdbot
       messageTemplate: 'chore(gitops): auto-update image tag to {{ .SelectedTarget.Tag }}'
   update:
