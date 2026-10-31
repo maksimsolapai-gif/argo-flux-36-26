@@ -100,6 +100,9 @@ spec:
   url: https://github.com/maksimsolapai-gif/jenkins-docker-k8s-pipeline.git
   ref:
     branch: main
+  # ДОБАВЛЯЕМ СТРОКУ: Передаем токен для получения прав на автоматические коммиты
+  secretRef:
+    name: ghcr-secret
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
