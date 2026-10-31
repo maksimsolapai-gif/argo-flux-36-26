@@ -18,10 +18,8 @@ spec:
   imageRepositoryRef:
     name: taskboard-image-repo
   policy:
-    # Числовая сортировка по возрастанию
     numerical:
       order: asc
-  # ИСПРАВЛЕНО ПОД СТАНДАРТ V1: Находим теги gh-X и извлекаем из них только числовую группу
   filterTags:
     pattern: '^gh-(?P<num>[0-9]+)$'
     extract: '$num'
@@ -36,13 +34,14 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-taskboard-repo
-  # ДОБАВЛЯЕМ ЭТУ СТРОКУ СЮДА: Передаем токен напрямую в автоматизатор коммитов!
-  secretRef:
-    name: ghcr-secret
+  # ИСПРАВЛЕНО: secretRef перенесен внутрь секции git в соответствии со спецификацией v1 API
   git:
     checkout:
       ref:
         branch: main
+      # ТОКЕН ПЕРЕДАЕТСЯ СТРОГО СЮДА!
+      secretRef:
+        name: ghcr-secret
     commit:
       author:
         email: fluxcdbot@://github.com
@@ -50,4 +49,3 @@ spec:
       messageTemplate: "chore(gitops): auto-update container images to latest stable build"
   update:
     path: ./k8s/manifests
-
