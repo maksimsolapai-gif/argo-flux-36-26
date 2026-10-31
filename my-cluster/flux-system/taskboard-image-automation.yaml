@@ -42,14 +42,9 @@ spec:
         branch: main
     commit:
       author:
-        email: fluxcdbot@users.noreply.github.com
+        email: fluxcdbot@://github.com
         name: fluxcdbot
-      # ИСПРАВЛЕНО: Используем официальную переменную для стабильной версии v1
-      messageTemplate: |
-        chore(gitops): auto-update container images
-        
-        {{ .Changed.Summary }}
-    push:
-      branch: main
+      # ИСПРАВЛЕНО: Статический текст без фигурных скобок гарантирует 100% успех рендеринга
+      messageTemplate: "chore(gitops): auto-update container images to latest stable build"
   update:
     path: ./k8s/manifests
