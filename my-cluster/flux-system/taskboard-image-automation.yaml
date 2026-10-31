@@ -42,8 +42,14 @@ spec:
         branch: main
     commit:
       author:
-        email: fluxcdbot@://github.com
+        email: fluxcdbot@users.noreply.github.com
         name: fluxcdbot
-      messageTemplate: 'chore(gitops): auto-update image tag to {{ .SelectedTarget.Tag }}'
+      # ИСПРАВЛЕНО: Используем официальную переменную для стабильной версии v1
+      messageTemplate: |
+        chore(gitops): auto-update container images
+        
+        {{ .Changed.Summary }}
+    push:
+      branch: main
   update:
     path: ./k8s/manifests
