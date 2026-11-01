@@ -20,9 +20,7 @@ spec:
   policy:
     numerical:
       order: asc
-  filterTags:
-    pattern: '^gh-(?P<num>[0-9]+)$'
-    extract: '$num'
+
 ---
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageUpdateAutomation
