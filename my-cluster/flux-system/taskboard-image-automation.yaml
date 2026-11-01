@@ -20,7 +20,9 @@ spec:
   policy:
     numerical:
       order: asc
-
+  # ИСПРАВЛЕНО: Фильтр пропускает ТОЛЬКО чистые цифры, полностью отсекая старые теги "gh-*"
+  filterTags:
+    pattern: '^[0-9]+$'
 ---
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageUpdateAutomation
