@@ -34,6 +34,9 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-taskboard-repo
+  # ПРАВИЛЬНО ПО СТАНДАРТУ V1: Секрет для git push должен лежать прямо здесь, на верхнем уровне spec!
+  secretRef:
+    name: git-write-secret
   git:
     checkout:
       ref:
